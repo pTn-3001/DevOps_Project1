@@ -1,0 +1,83 @@
+package org.springframework.samples.petclinic.customers.model;
+
+import org.junit.jupiter.api.Test;
+import java.util.Date;
+import static org.junit.jupiter.api.Assertions.*;
+
+import org.springframework.samples.petclinic.customers.model.Owner;
+import org.springframework.samples.petclinic.customers.model.OwnerRepository;
+import org.springframework.samples.petclinic.customers.model.Pet;
+import org.springframework.samples.petclinic.customers.model.PetRepository;
+import org.springframework.samples.petclinic.customers.model.PetType;
+
+class PetAndOwnerModelTest {
+    @Test
+    void shouldCreatePetWithOwner() {
+        Owner owner = new Owner();
+        owner.setFirstName("John");
+        owner.setLastName("Doe");
+        owner.setAddress("123 Street");
+        owner.setCity("New York");
+        owner.setTelephone("1234567890");
+
+        Pet pet = new Pet();
+        pet.setId(1);
+        pet.setName("Max");
+        pet.setBirthDate(new Date());
+        
+        PetType petType = new PetType();
+        petType.setId(3);
+        pet.setType(petType);
+        
+        owner.addPet(pet);
+        
+        assertEquals("Max", pet.getName());
+        assertEquals(1, pet.getId());
+        assertEquals(3, pet.getType().getId());
+        assertEquals(owner, pet.getOwner());
+        assertEquals("John", pet.getOwner().getFirstName());
+    }
+    
+    @Test
+    void shouldAddPetToOwner() {
+        Owner owner = new Owner();
+        owner.setFirstName("Jane");
+        owner.setLastName("Smith");
+        
+        Pet pet = new Pet();
+        pet.setName("Bella");
+        
+        owner.addPet(pet);
+        
+        assertEquals(1, owner.getPets().size());
+        assertTrue(owner.getPets().contains(pet));
+        assertEquals(owner, pet.getOwner());
+    }
+    
+    @Test
+    void shouldComparePetsCorrectly() {
+        Pet pet1 = new Pet();
+        pet1.setId(5);
+        pet1.setName("Rocky");
+        
+        Pet pet2 = new Pet();
+        pet2.setId(5);
+        pet2.setName("Rocky");
+        
+        assertEquals(pet1, pet2);
+        assertEquals(pet1.hashCode(), pet2.hashCode());
+    }
+    
+    @Test
+    void shouldCompareOwnersCorrectly() {
+        Owner owner1 = new Owner();
+        owner1.setFirstName("Alice");
+        owner1.setLastName("Brown");
+        
+        Owner owner2 = new Owner();
+        owner2.setFirstName("Alice");
+        owner2.setLastName("Brown");
+        
+        assertEquals(owner1, owner2);
+    }
+}
