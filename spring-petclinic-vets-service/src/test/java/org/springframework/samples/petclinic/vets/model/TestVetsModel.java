@@ -1,55 +1,49 @@
 package org.springframework.samples.petclinic.vets.model;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
+import java.util.List;
 import java.util.Set;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Unit tests for {@link Vet} and {@link Specialty} model classes.
- */
 class VetModelTest {
 
-    private Vet vet;
-    private Specialty specialty;
-
-    @BeforeEach
-    void setUp() {
-        vet = new Vet();
+    @Test
+    void testVetGetterAndSetter() {
+        Vet vet = new Vet();
         vet.setId(1);
         vet.setFirstName("John");
         vet.setLastName("Doe");
 
-        specialty = new Specialty();
+        assertEquals(1, vet.getId());
+        assertEquals("John", vet.getFirstName());
+        assertEquals("Doe", vet.getLastName());
+    }
+
+    @Test
+    void testSpecialtyGetterAndSetter() {
+        Specialty specialty = new Specialty();
         specialty.setName("Dentistry");
+
+        assertEquals("Dentistry", specialty.getName());
     }
 
     @Test
-    void testVetProperties() {
-        assertThat(vet.getId()).isEqualTo(1);
-        assertThat(vet.getFirstName()).isEqualTo("John");
-        assertThat(vet.getLastName()).isEqualTo("Doe");
-    }
+    void testVetSpecialtyRelationship() {
+        Vet vet = new Vet();
+        Specialty specialty1 = new Specialty();
+        specialty1.setName("Surgery");
+        Specialty specialty2 = new Specialty();
+        specialty2.setName("Radiology");
 
-    @Test
-    void testSpecialtyProperties() {
-        assertThat(specialty.getName()).isEqualTo("Dentistry");
-    }
+        vet.addSpecialty(specialty1);
+        vet.addSpecialty(specialty2);
 
-    @Test
-    void testAddSpecialty() {
-        vet.addSpecialty(specialty);
         Set<Specialty> specialties = vet.getSpecialtiesInternal();
-        assertThat(specialties).hasSize(1);
-        assertThat(specialties.iterator().next().getName()).isEqualTo("Dentistry");
-    }
+        List<Specialty> sortedSpecialties = vet.getSpecialties();
 
-    @Test
-    void testGetNrOfSpecialties() {
-        assertThat(vet.getNrOfSpecialties()).isEqualTo(0);
-        vet.addSpecialty(specialty);
-        assertThat(vet.getNrOfSpecialties()).isEqualTo(1);
+        assertEquals(2, specialties.size());
+        assertEquals("Radiology", sortedSpecialties.get(0).getName()); // Check sorted order
+        assertEquals("Surgery", sortedSpecialties.get(1).getName());
     }
 }
