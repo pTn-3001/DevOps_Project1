@@ -19,7 +19,7 @@ pipeline {
                         changedFiles = sh(script: "git diff --name-only HEAD^", returnStdout: true).trim().split('\n').toList()
                     }
 
-                    def services = ['spring-petclinic-customers-service', 'spring-petclinic-visits-service', 'spring-petclinic-vets-service']
+                    def services = ['spring-petclinic-customers-service', 'spring-petclinic-visits-service', 'spring-petclinic-vets-service', 'spring-petclinic-genai-service']
 
                     echo "Changed files: ${changedFiles}"
 
@@ -77,7 +77,7 @@ pipeline {
         stage('Test & Coverage - Agent 2') {
             agent { label 'agent-2' }  
             when {
-                expression { env.NO_SERVICES_TO_BUILD == 'false' && env.SERVICE_CHANGED.contains('vets-service') }
+                expression { env.NO_SERVICES_TO_BUILD == 'false' && (env.SERVICE_CHANGED.contains('vets-service') || env.SERVICE_CHANGED.contains('genai-service')) }
             }
             steps {
                 script {
@@ -143,7 +143,7 @@ pipeline {
         stage('Build - Agent 2') {
             agent { label 'agent-2' }
             when {
-                expression { env.NO_SERVICES_TO_BUILD == 'false' && env.SERVICE_CHANGED.contains('vets-service') }
+                expression { env.NO_SERVICES_TO_BUILD == 'false' && (env.SERVICE_CHANGED.contains('vets-service') || env.SERVICE_CHANGED.contains('genai-service')) }
             }
             steps {
                 script {
