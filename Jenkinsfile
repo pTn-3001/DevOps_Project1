@@ -1,13 +1,12 @@
 pipeline {
-    agent none
+    agent none  // Không chạy trên Master, chỉ điều phối
 
     environment {
         OTHER = ''
     }
-
     stages {
         stage('Check Changes') {
-            agent { label 'built-in' }
+            agent { label 'built-in' } // Chạy trên Master
             steps {
                 script {
                     echo "Commit SHA: ${GIT_COMMIT}"
@@ -20,7 +19,7 @@ pipeline {
                     }
 
                     def services = ['spring-petclinic-customers-service', 'spring-petclinic-visits-service', 'spring-petclinic-vets-service']
-
+                    
                     echo "Changed files: ${changedFiles}"
 
                     if (changedFiles.isEmpty() || changedFiles[0] == '') {
@@ -58,6 +57,7 @@ pipeline {
                     for (service in services) {
                         echo "Running unit tests for service: ${service} on Agent 1"
                         sh "./mvnw clean verify -pl ${service} -am"
+                        stash name: "${service}-coverage", includes: "${service}/target/site/jacoco/**"
                     }
                 }
             }
@@ -67,7 +67,6 @@ pipeline {
                         def services = env.SERVICE_CHANGED.split(',')
                         for (service in services) {
                             junit "${service}/target/surefire-reports/*.xml"
-                            archiveArtifacts artifacts: "${service}/target/site/jacoco/*", fingerprint: true
                         }
                     }
                 }
@@ -83,12 +82,12 @@ pipeline {
                 script {
                     echo "Running unit tests for vets-service on Agent 2"
                     sh "./mvnw clean verify -pl spring-petclinic-vets-service -am"
+                    stash name: "spring-petclinic-vets-service-coverage", includes: "spring-petclinic-vets-service/target/site/jacoco/**"
                 }
             }
             post {
                 always {
                     junit "spring-petclinic-vets-service/target/surefire-reports/*.xml"
-                    archiveArtifacts artifacts: "spring-petclinic-vets-service/target/site/jacoco/*", fingerprint: true
                 }
             }
         }
@@ -102,6 +101,11 @@ pipeline {
                 script {
                     def services = env.SERVICE_CHANGED.split(',')
                     def failedCoverageServices = []
+
+                    // unstash artifacts từ các agents khác
+                    for (service in services) {
+                        unstash "${service}-coverage"
+                    }
 
                     for (service in services) {
                         def coverageHtml = sh(
@@ -139,6 +143,7 @@ pipeline {
                 }
             }
         }
+        
 
         stage('Build - Agent 2') {
             agent { label 'agent-2' }
@@ -153,13 +158,13 @@ pipeline {
             }
         }
     }
-
+    
     post {
         success {
-            echo "Pipeline completed successfully!"
+            echo "Success"
         }
         failure {
-            echo "Pipeline failed!"
+            echo "Fail"
         }
     }
 }
