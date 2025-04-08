@@ -7,7 +7,7 @@ pipeline {
     APP_NAME = 'spring-petclinic-microservices'
     DOCKER_IMAGE = "ptn3001/spring-petclinic-microservices"
     }
-}
+
     stages {
         stage('Check Changes') {
             agent { label 'built-in' } // Chạy trên Master
