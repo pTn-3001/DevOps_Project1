@@ -162,7 +162,7 @@ pipeline {
                 }
             }
         }
-    }
+
         stage('Build and Push Image') {
             agent { label 'built-in' } // Agent có cài đặt Docker
             when {
@@ -196,6 +196,7 @@ pipeline {
             }
         }
     }
+
     
     post {
         success {
