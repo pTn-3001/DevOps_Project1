@@ -3,6 +3,11 @@ pipeline {
 
     environment {
         OTHER = ''
+        environment {
+        DOCKER_HUB = credentials('dockerhub')
+        APP_NAME = 'spring-petclinic-microservices'
+        DOCKER_IMAGE = "${ptn3001}/${spring-petclinic-microservices}"
+        }
     }
     stages {
         stage('Check Changes') {
@@ -154,6 +159,39 @@ pipeline {
                 script {
                     echo "Building vets-service on Agent 2"
                     sh "./mvnw package -pl spring-petclinic-vets-service -am -DskipTests"
+                }
+            }
+        }
+    }
+        stage('Build and Push Image') {
+            agent { label 'built-in' } // Agent có cài đặt Docker
+            when {
+                expression { env.SHOULD_BUILD == 'true' }
+            }
+            steps {
+                script {
+                    // Xác định tag image
+                    def commitId = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    def branch = env.GIT_BRANCH.replace('origin/', '')
+                    
+                    // Login Docker Hub
+                    sh "echo ${DOCKER_HUB_PSW} | docker login -u ${DOCKER_HUB_USR} --password-stdin"
+                    
+                    // Build single image
+                    sh "docker build -t ${DOCKER_IMAGE}:${commitId} ."
+                    sh "docker push ${DOCKER_IMAGE}:${commitId}"
+                    
+                    // Nếu là branch main, tag thêm latest
+                    if (branch == 'main') {
+                        sh "docker tag ${DOCKER_IMAGE}:${commitId} ${DOCKER_IMAGE}:latest"
+                        sh "docker push ${DOCKER_IMAGE}:latest"
+                    }
+
+                    // Lưu thông tin image để sử dụng trong CD
+                    env.BUILD_IMAGE_TAG = commitId
+                    if (branch == 'main') {
+                        env.LATEST_IMAGE_TAG = 'latest'
+                    }
                 }
             }
         }
