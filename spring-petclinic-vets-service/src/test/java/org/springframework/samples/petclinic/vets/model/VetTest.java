@@ -3,7 +3,7 @@ package org.springframework.samples.petclinic.vets.model;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-// Hello PTN
+
 class VetTest {
 
     private Vet vet;
