@@ -2,7 +2,8 @@ pipeline {
     agent none  // Không chạy trên Master, chỉ điều phối
 
     environment {
-        DOCKER_HUB = credentials('dockerhub')
+        DOCKER_HUB_USR = credentials('dockerhub').username
+        DOCKER_HUB_PSW = credentials('dockerhub').password
         APP_NAME = 'spring-petclinic-microservices'
         DOCKER_IMAGE = "ptn3001/spring-petclinic-microservices"
         }
