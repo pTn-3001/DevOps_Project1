@@ -2,7 +2,7 @@ pipeline {
     agent none  // Không chạy trên Master, chỉ điều phối
     environment {
         OTHER = ''
-        DOCKER_HUB = credentials('dockerhub')
+        DOCKER_HUB = credentials('DOCKERHUB_TOKEN')
         APP_NAME = 'spring-petclinic-microservices'
         DOCKER_IMAGE = "ptn3001/spring-petclinic-microservices"
     }
