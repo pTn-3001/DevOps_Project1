@@ -180,7 +180,7 @@ pipeline {
                     for (service in services) {
                         echo "Building Docker image for service: ${service}"
                         dir(service) {
-                            sh "./mvw clean install -pl ${service} -am -P buildDocker"
+                            sh "./mvnw clean install -pl ${service} -am -P buildDocker"
                             
                             // Push image lên Docker Hub
                             sh "docker push ${DOCKER_IMAGE}-${service}:${commitId}"
