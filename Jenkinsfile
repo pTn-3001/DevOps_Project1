@@ -179,17 +179,14 @@ pipeline {
                     def services = env.SERVICE_CHANGED.split(',')
                     for (service in services) {
                         echo "Building Docker image for service: ${service}"
-                        dir(service) {
-                            sh "./mvnw clean install -pl ${service} -am -P buildDocker"
+                        sh "./mvnw clean install -pl ${service} -am -P buildDocker"
+                        // Push image lên Docker Hub
+                        sh "docker push ${DOCKER_IMAGE}-${service}:${commitId}"
                             
-                            // Push image lên Docker Hub
-                            sh "docker push ${DOCKER_IMAGE}-${service}:${commitId}"
-                            
-                            // Nếu là branch main, tag thêm latest
-                            if (branch == 'main') {
-                                sh "docker tag ${DOCKER_IMAGE}-${service}:${commitId} ${DOCKER_IMAGE}-${service}:latest"
-                                sh "docker push ${DOCKER_IMAGE}-${service}:latest"
-                            }
+                        // Nếu là branch main, tag thêm latest
+                        if (branch == 'main') {
+                            sh "docker tag ${DOCKER_IMAGE}-${service}:${commitId} ${DOCKER_IMAGE}-${service}:latest"
+                            sh "docker push ${DOCKER_IMAGE}-${service}:latest"
                         }
                     }
         
