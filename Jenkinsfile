@@ -3,7 +3,7 @@ pipeline {
     environment {
         OTHER = ''
         DOCKER_HUB = credentials('DOCKERHUB_TOKEN')
-        DOCKER_IMAGE = "ptn3001/spring-petclinic-microservices"
+        DOCKER_IMAGE = "ptn3001/"
     }
 
     stages {
