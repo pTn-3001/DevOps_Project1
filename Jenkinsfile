@@ -171,20 +171,28 @@ pipeline {
                     // Xác định tag image
                     def commitId = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
                     def branch = env.GIT_BRANCH.replace('origin/', '')
-                    
+        
                     // Login Docker Hub
                     sh "echo ${DOCKER_HUB_PSW} | docker login -u ${DOCKER_HUB_USR} --password-stdin"
-                    
-                    // Build single image
-                    sh "docker build -t ${DOCKER_IMAGE}:${commitId} ."
-                    sh "docker push ${DOCKER_IMAGE}:${commitId}"
-                    
-                    // Nếu là branch main, tag thêm latest
-                    if (branch == 'main') {
-                        sh "docker tag ${DOCKER_IMAGE}:${commitId} ${DOCKER_IMAGE}:latest"
-                        sh "docker push ${DOCKER_IMAGE}:latest"
+        
+                    // Build và push image cho từng service
+                    def services = env.SERVICE_CHANGED.split(',')
+                    for (service in services) {
+                        echo "Building Docker image for service: ${service}"
+                        dir(service) {
+                            sh "../mvnw clean install -P buildDocker"
+                            
+                            // Push image lên Docker Hub
+                            sh "docker push ${DOCKER_IMAGE}-${service}:${commitId}"
+                            
+                            // Nếu là branch main, tag thêm latest
+                            if (branch == 'main') {
+                                sh "docker tag ${DOCKER_IMAGE}-${service}:${commitId} ${DOCKER_IMAGE}-${service}:latest"
+                                sh "docker push ${DOCKER_IMAGE}-${service}:latest"
+                            }
+                        }
                     }
-
+        
                     // Lưu thông tin image để sử dụng trong CD
                     env.BUILD_IMAGE_TAG = commitId
                     if (branch == 'main') {
