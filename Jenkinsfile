@@ -162,38 +162,44 @@ pipeline {
         }
 
         stage('Build and Push Image') {
-            agent { label 'built-in' } // Agent có cài đặt Docker
+            agent { label 'built-in' }
             when {
-                expression { env.NO_SERVICES_TO_BUILD = 'false' }
+                expression { env.NO_SERVICES_TO_BUILD == 'false' }
             }
             steps {
                 script {
-                    // Xác định tag image
                     def commitId = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                    def branch = env.GIT_BRANCH.replace('origin/', '')
-        
-                    // Login Docker Hub
-                    sh "echo ${DOCKER_HUB_PSW} | docker login -u ${DOCKER_HUB_USR} --password-stdin"
-        
-                    // Build và push image cho từng service
+                    def branchName = env.BRANCH_NAME ?: sh(script: "git rev-parse --abbrev-ref HEAD", returnStdout: true).trim()
                     def services = env.SERVICE_CHANGED.split(',')
-                    for (service in services) {
-                        echo "Building Docker image for service: ${service}"
-                        sh "./mvnw clean install -pl ${service} -am -P buildDocker"
-                        // Push image lên Docker Hub
-                        sh "docker push ${DOCKER_IMAGE}-${service}:${commitId}"
-                            
-                        // Nếu là branch main, tag thêm latest
-                        if (branch == 'main') {
-                            sh "docker tag ${DOCKER_IMAGE}-${service}:${commitId} ${DOCKER_IMAGE}-${service}:latest"
-                            sh "docker push ${DOCKER_IMAGE}-${service}:latest"
-                        }
+
+                    echo "Building only changed services: ${services.join(', ')}"
+                    echo "Current branch: ${branchName}"
+
+                    for (svc in services) {
+                        echo "Building Docker image for ${svc}"
+                        sh "./mvnw clean install -pl ${svc} -am -P buildDocker"
                     }
-        
-                    // Lưu thông tin image để sử dụng trong CD
-                    env.BUILD_IMAGE_TAG = commitId
-                    if (branch == 'main') {
-                        env.LATEST_IMAGE_TAG = 'latest'
+
+                    sh "echo ${DOCKER_HUB_CREDS_PSW} | docker login -u ${DOCKER_HUB_CREDS_USR} --password-stdin"
+
+                    for (svc in services) {
+                        def image = "${DOCKER_IMAGE}${svc}"
+                        echo "Pushing image: ${image}:${commitId}"
+
+                        sh """
+                            docker tag ${image} ${image}:${commitId}
+                            docker push ${image}:${commitId}
+                        """
+
+                        if (branchName == "main") {
+                            echo "Also tagging and pushing latest for ${image}"
+                            sh """
+                                docker tag ${image} ${image}:latest
+                                docker push ${image}:latest
+                            """
+                        } else {
+                            echo "Skipping latest tag for non-main branch (${branchName})"
+                        }
                     }
                 }
             }
