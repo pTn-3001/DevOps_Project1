@@ -2,23 +2,18 @@ pipeline {
     agent any
 
     parameters {
-        string(name: 'ADMIN_SERVER_TAG', defaultValue: 'latest', description: 'Image tag for admin-server')
-        string(name: 'API_GATEWAY_TAG', defaultValue: 'latest', description: 'Image tag for api-gateway')
-        string(name: 'CONFIG_SERVER_TAG', defaultValue: 'latest', description: 'Image tag for config-server')
-        string(name: 'CUSTOMERS_SERVICE_TAG', defaultValue: 'latest', description: 'Image tag for customers-service')
-        string(name: 'DISCOVERY_SERVER_TAG', defaultValue: 'latest', description: 'Image tag for discovery-server')
-        string(name: 'VETS_SERVICE_TAG', defaultValue: 'latest', description: 'Image tag for vets-service')
-        string(name: 'VISITS_SERVICE_TAG', defaultValue: 'latest', description: 'Image tag for visits-service')
-        string(name: 'GENAI_SERVICE_TAG', defaultValue: 'latest', description: 'Image tag for genai-service')
+        string(name: 'customers-service', defaultValue: 'main')
+        string(name: 'visits-service', defaultValue: 'main')
+        string(name: 'vets-service', defaultValue: 'main')
+        string(name: 'genai-service', defaultValue: 'main')
     }
 
     environment {
-        DOCKER_IMAGE_BASE = "vh3956/spring-petclinic"
+        DOCKER_IMAGE_BASE = "ptn3001/spring-petclinic"
         KUBECONFIG = '/var/lib/jenkins/.kube/config'
     }
 
     stages {
-
         stage('Initialize Kubernetes Context') {
             steps {
                 script {
@@ -55,14 +50,10 @@ pipeline {
                     echo "Updating Kubernetes deployments with selected image tags..."
 
                     def services = [
-                        [name: "admin-server",         tag: params.ADMIN_SERVER_TAG],
-                        [name: "api-gateway",          tag: params.API_GATEWAY_TAG],
-                        [name: "config-server",        tag: params.CONFIG_SERVER_TAG],
-                        [name: "customers-service",    tag: params.CUSTOMERS_SERVICE_TAG],
-                        [name: "discovery-server",     tag: params.DISCOVERY_SERVER_TAG],
-                        [name: "vets-service",         tag: params.VETS_SERVICE_TAG],
-                        [name: "visits-service",       tag: params.VISITS_SERVICE_TAG],
-                        [name: "genai-service",        tag: params.GENAI_SERVICE_TAG]
+                        [name: "customers-service",    tag: params.customers-service],
+                        [name: "vets-service",         tag: params.vets-service],
+                        [name: "visits-service",       tag: params.visits-service],
+                        [name: "genai-service",        tag: params.genai-service]
                     ]
 
                     services.each { svc ->
