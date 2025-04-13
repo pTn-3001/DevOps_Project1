@@ -11,6 +11,7 @@ pipeline {
     environment {
         DOCKER_IMAGE_BASE = "ptn3001/spring-petclinic"
         KUBECONFIG = '/var/lib/jenkins/.kube/config'
+        PATH = "/var/lib/jenkins/bin:$PATH"
     }
 
     stages {
@@ -50,10 +51,10 @@ pipeline {
                     echo "Updating Kubernetes deployments with selected image tags..."
 
                     def services = [
-                        [name: "customers-service",    tag: params.customers-service],
-                        [name: "vets-service",         tag: params.vets-service],
-                        [name: "visits-service",       tag: params.visits-service],
-                        [name: "genai-service",        tag: params.genai-service]
+                        [name: "customers-service",    tag: params['customers-service']],
+                        [name: "vets-service",         tag: params['vets-service']],
+                        [name: "visits-service",       tag: params['visits-service']],
+                        [name: "genai-service",        tag: params['genai-service']]
                     ]
 
                     services.each { svc ->
