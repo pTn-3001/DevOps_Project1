@@ -1,3 +1,4 @@
+Hồ Nghĩa
 pipeline {
     agent any
 
@@ -11,26 +12,68 @@ pipeline {
         stage('Check Branch or Tag') {
             steps {
                 script {
-                    def tag = sh(script: "git tag --points-at HEAD", returnStdout: true).trim()
                     def branch = env.BRANCH_NAME
-
-                    if (tag) {
-                        echo "Git tag found: ${tag}"
-                        if (tag ==~ /^v\\d+\\.\\d+\\.\\d+$/) {
-                            echo "This is a tag release: ${tag}"
-                            env.IMAGE_TAG = tag
-                        } else {
-                            echo "Tag ${tag} is not a release tag. Aborting."
-                            currentBuild.result = 'ABORTED'
-                            return
-                        }
-                    } else if (branch ==~ /^rc_v\\d+\\.\\d+\\.\\d+$/) {
+                    if (branch ==~ /^v\d+\.\d+\.\d+$/) {
+                        echo "This is a tag release: ${branch}"
+                        env.IMAGE_TAG = branch
+                    } else if (branch ==~ /^rc_v\d+\.\d+\.\d+$/) {
                         echo "This is a release candidate branch: ${branch}"
                         env.IMAGE_TAG = branch.replaceFirst(/^rc_/, '')
                     } else {
-                        echo "Branch ${branch} is not a release tag or RC branch. Skipping pipeline."
+                        echo "Not a release/tag branch. Skipping pipeline."
                         currentBuild.result = 'ABORTED'
                         return
+                    }
+                }
+            }
+        }
+
+        stage('Build & Push Image') {
+            steps {
+                script {
+                    sh './mvnw clean install -P buildDocker'
+
+                    def services = [
+                        'admin-server',
+                        'api-gateway',
+                        'config-server',
+                        'customers-service',
+                        'discovery-server',
+                        'vets-service',
+                        'visits-service',
+                        'genai-service',
+                    ]
+
+                    sh "echo ${DOCKER_HUB_CREDS_PSW} | docker login -u ${DOCKER_HUB_CREDS_USR} --password-stdin"
+
+                    for (svc in services) {
+                        def img = "${DOCKER_IMAGE}${svc}"
+                        sh """
+                            docker tag ${img} ${img}:${IMAGE_TAG}
+                            docker push ${img}:${IMAGE_TAG}
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to Staging') {
+            steps {
+                script {
+                    def services = [
+                        'admin-server',
+                        'api-gateway',
+                        'config-server',
+                        'customers-service',
+                        'discovery-server',
+                        'vets-service',
+                        'visits-service',
+                        'genai-service',
+                    ]
+
+                    for (svc in services) {
+                        def img = "${DOCKER_IMAGE}${svc}:${IMAGE_TAG}"
+                        sh "kubectl set image deployment/${svc} ${svc}=${img} -n staging || true"
                     }
                 }
             }
