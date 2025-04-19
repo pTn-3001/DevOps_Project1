@@ -12,6 +12,10 @@ pipeline {
         stage('Check Branch or Tag') {
             steps {
                 script {
+<<<<<<< HEAD
+=======
+                    def tag = sh(script: "git describe --tags --exact-match HEAD 2>/dev/null || echo ''", returnStdout: true).trim()
+>>>>>>> 327c9fb (Commit 5)
                     def branch = env.BRANCH_NAME
                     if (branch ==~ /^v\d+\.\d+\.\d+$/) {
                         echo "This is a tag release: ${branch}"
@@ -27,6 +31,7 @@ pipeline {
                 }
             }
         }
+<<<<<<< HEAD
 
         stage('Build & Push Image') {
             steps {
@@ -78,6 +83,8 @@ pipeline {
                 }
             }
         }
+=======
+>>>>>>> 327c9fb (Commit 5)
     }
 
     post {
