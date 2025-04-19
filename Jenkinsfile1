@@ -13,9 +13,13 @@ pipeline {
             steps {
                 script {
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
                     def tag = sh(script: "git describe --tags --exact-match HEAD 2>/dev/null || echo ''", returnStdout: true).trim()
 >>>>>>> 327c9fb (Commit 5)
+=======
+                    def tag = sh(script: "git tag --points-at HEAD", returnStdout: true).trim()
+>>>>>>> dc0702c (Commit 1)
                     def branch = env.BRANCH_NAME
                     if (branch ==~ /^v\d+\.\d+\.\d+$/) {
                         echo "This is a tag release: ${branch}"
