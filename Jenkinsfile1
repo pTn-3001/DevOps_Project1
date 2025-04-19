@@ -11,14 +11,6 @@ pipeline {
         stage('Check Branch or Tag') {
             steps {
                 script {
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-                    def tag = sh(script: "git describe --tags --exact-match HEAD 2>/dev/null || echo ''", returnStdout: true).trim()
->>>>>>> 327c9fb (Commit 5)
-=======
-                    def tag = sh(script: "git tag --points-at HEAD", returnStdout: true).trim()
->>>>>>> dc0702c (Commit 1)
                     def branch = env.BRANCH_NAME
                     if (branch ==~ /^v\d+\.\d+\.\d+$/) {
                         echo "This is a tag release: ${branch}"
@@ -34,7 +26,6 @@ pipeline {
                 }
             }
         }
-<<<<<<< HEAD
 
         stage('Build & Push Image') {
             steps {
@@ -68,19 +59,6 @@ pipeline {
         stage('Deploy to Staging') {
             steps {
                 script {
-<<<<<<< HEAD
-=======
-                    // Check and create namespace 'staging' if it does not exist
-                    sh """
-                        if ! kubectl get namespace staging > /dev/null 2>&1; then
-                            echo "Namespace 'staging' does not exist. Creating..."
-                            kubectl create namespace staging
-                        else
-                            echo "Namespace 'staging' already exists."
-                        fi
-                    """
-
->>>>>>> b9277df (Commit 4)
                     def services = [
                         'admin-server',
                         'api-gateway',
@@ -99,8 +77,6 @@ pipeline {
                 }
             }
         }
-=======
->>>>>>> 327c9fb (Commit 5)
     }
 
     post {
