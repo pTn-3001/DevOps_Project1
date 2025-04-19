@@ -29,66 +29,69 @@ pipeline {
             }
         }
 
-        stage('Build & Push Image') {
-            steps {
-                script {
-                    sh './mvnw clean install -P buildDocker'
+        // stage('Build & Push Image') {
+        //     when {
+        //         expression {currentBuild}
+        //     }
+        //     steps {
+        //         script {
+        //             sh './mvnw clean install -P buildDocker'
 
-                    def services = [
-                        'admin-server',
-                        'api-gateway',
-                        'config-server',
-                        'customers-service',
-                        'discovery-server',
-                        'vets-service',
-                        'visits-service',
-                        'genai-service',
-                    ]
+        //             def services = [
+        //                 'admin-server',
+        //                 'api-gateway',
+        //                 'config-server',
+        //                 'customers-service',
+        //                 'discovery-server',
+        //                 'vets-service',
+        //                 'visits-service',
+        //                 'genai-service',
+        //             ]
 
-                    sh "echo ${DOCKER_HUB_CREDS_PSW} | docker login -u ${DOCKER_HUB_CREDS_USR} --password-stdin"
+        //             sh "echo ${DOCKER_HUB_CREDS_PSW} | docker login -u ${DOCKER_HUB_CREDS_USR} --password-stdin"
 
-                    for (svc in services) {
-                        def img = "${DOCKER_IMAGE}${svc}"
-                        sh """
-                            docker tag ${img} ${img}:${IMAGE_TAG}
-                            docker push ${img}:${IMAGE_TAG}
-                        """
-                    }
-                }
-            }
-        }
+        //             for (svc in services) {
+        //                 def img = "${DOCKER_IMAGE}${svc}"
+        //                 sh """
+        //                     docker tag ${img} ${img}:${IMAGE_TAG}
+        //                     docker push ${img}:${IMAGE_TAG}
+        //                 """
+        //             }
+        //         }
+        //     }
+        // }
 
-        stage('Deploy to Staging') {
-            steps {
-                script {
-                    // Check and create namespace 'staging' if it does not exist
-                    sh """
-                        if ! kubectl get namespace staging > /dev/null 2>&1; then
-                            echo "Namespace 'staging' does not exist. Creating..."
-                            kubectl create namespace staging
-                        else
-                            echo "Namespace 'staging' already exists."
-                        fi
-                    """
+        // stage('Deploy to Staging') {
+        //     steps {
+        //         script {
+        //             // Check and create namespace 'staging' if it does not exist
+        //             sh """
+        //                 if ! kubectl get namespace staging > /dev/null 2>&1; then
+        //                     echo "Namespace 'staging' does not exist. Creating..."
+        //                     kubectl create namespace staging
+        //                 else
+        //                     echo "Namespace 'staging' already exists."
+        //                 fi
+        //             """
 
-                    def services = [
-                        'admin-server',
-                        'api-gateway',
-                        'config-server',
-                        'customers-service',
-                        'discovery-server',
-                        'vets-service',
-                        'visits-service',
-                        'genai-service',
-                    ]
+        //             def services = [
+        //                 'admin-server',
+        //                 'api-gateway',
+        //                 'config-server',
+        //                 'customers-service',
+        //                 'discovery-server',
+        //                 'vets-service',
+        //                 'visits-service',
+        //                 'genai-service',
+        //             ]
 
-                    for (svc in services) {
-                        def img = "${DOCKER_IMAGE}${svc}:${IMAGE_TAG}"
-                        sh "kubectl set image deployment/${svc} ${svc}=${img} -n staging || true"
-                    }
-                }
-            }
-        }
+        //             for (svc in services) {
+        //                 def img = "${DOCKER_IMAGE}${svc}:${IMAGE_TAG}"
+        //                 sh "kubectl set image deployment/${svc} ${svc}=${img} -n staging || true"
+        //             }
+        //         }
+        //     }
+        // }
     }
 
     post {
