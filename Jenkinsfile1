@@ -59,6 +59,19 @@ pipeline {
         stage('Deploy to Staging') {
             steps {
                 script {
+<<<<<<< HEAD
+=======
+                    // Check and create namespace 'staging' if it does not exist
+                    sh """
+                        if ! kubectl get namespace staging > /dev/null 2>&1; then
+                            echo "Namespace 'staging' does not exist. Creating..."
+                            kubectl create namespace staging
+                        else
+                            echo "Namespace 'staging' already exists."
+                        fi
+                    """
+
+>>>>>>> b9277df (Commit 4)
                     def services = [
                         'admin-server',
                         'api-gateway',
