@@ -11,13 +11,20 @@ pipeline {
         stage('Check Branch or Tag') {
             steps {
                 script {
+                    def tag = sh(script: "git tag --points-at HEAD", returnStdout: true).trim()
                     def branch = env.BRANCH_NAME
-                    echo "Current branch or tag: ${branch}"
 
-                    if (branch ==~ /^v\d+\.\d+\.\d+$/) {
-                        echo "This is a tag release: ${branch}"
-                        env.IMAGE_TAG = branch
-                    } else if (branch ==~ /^rc_v\d+\.\d+\.\d+$/) {
+                    if (tag) {
+                        echo "Git tag found: ${tag}"
+                        if (tag ==~ /^v\\d+\\.\\d+\\.\\d+$/) {
+                            echo "This is a tag release: ${tag}"
+                            env.IMAGE_TAG = tag
+                        } else {
+                            echo "Tag ${tag} is not a release tag. Aborting."
+                            currentBuild.result = 'ABORTED'
+                            return
+                        }
+                    } else if (branch ==~ /^rc_v\\d+\\.\\d+\\.\\d+$/) {
                         echo "This is a release candidate branch: ${branch}"
                         env.IMAGE_TAG = branch.replaceFirst(/^rc_/, '')
                     } else {
@@ -28,7 +35,6 @@ pipeline {
                 }
             }
         }
-
     }
 
     post {
