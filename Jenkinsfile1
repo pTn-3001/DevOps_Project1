@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_HUB_CREDS = credentials('DOCKERHUB_TOKEN')
-        DOCKER_IMAGE = "ptn3001/"
+        DOCKER_HUB_CREDS = credentials('docker-hub-cre')
+        DOCKER_IMAGE = "vh3956/"
         IMAGE_TAG = ''
     }
 
@@ -12,6 +12,8 @@ pipeline {
             steps {
                 script {
                     def branch = env.BRANCH_NAME
+                    echo "Current branch or tag: ${branch}"
+
                     if (branch ==~ /^v\d+\.\d+\.\d+$/) {
                         echo "This is a tag release: ${branch}"
                         env.IMAGE_TAG = branch
@@ -19,7 +21,7 @@ pipeline {
                         echo "This is a release candidate branch: ${branch}"
                         env.IMAGE_TAG = branch.replaceFirst(/^rc_/, '')
                     } else {
-                        echo "Not a release/tag branch. Skipping pipeline."
+                        echo "Branch ${branch} is not a release tag or RC branch. Skipping pipeline."
                         currentBuild.result = 'ABORTED'
                         return
                     }
@@ -59,6 +61,16 @@ pipeline {
         stage('Deploy to Staging') {
             steps {
                 script {
+                    // Check and create namespace 'staging' if it does not exist
+                    sh """
+                        if ! kubectl get namespace staging > /dev/null 2>&1; then
+                            echo "Namespace 'staging' does not exist. Creating..."
+                            kubectl create namespace staging
+                        else
+                            echo "Namespace 'staging' already exists."
+                        fi
+                    """
+
                     def services = [
                         'admin-server',
                         'api-gateway',
