@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_HUB_CREDS = credentials('docker-hub-cre')
-        DOCKER_IMAGE = "vh3956/"
+        DOCKER_HUB_CREDS = credentials('DOCKERHUB_TOKEN')
+        DOCKER_IMAGE = "ptn3001/"
         IMAGE_TAG = ''
     }
 
