@@ -26,57 +26,6 @@ pipeline {
                 }
             }
         }
-
-        stage('Build & Push Image') {
-            steps {
-                script {
-                    sh './mvnw clean install -P buildDocker'
-
-                    def services = [
-                        'admin-server',
-                        'api-gateway',
-                        'config-server',
-                        'customers-service',
-                        'discovery-server',
-                        'vets-service',
-                        'visits-service',
-                        'genai-service',
-                    ]
-
-                    sh "echo ${DOCKER_HUB_CREDS_PSW} | docker login -u ${DOCKER_HUB_CREDS_USR} --password-stdin"
-
-                    for (svc in services) {
-                        def img = "${DOCKER_IMAGE}${svc}"
-                        sh """
-                            docker tag ${img} ${img}:${env.IMAGE_TAG}
-                            docker push ${img}:${env.IMAGE_TAG}
-                        """
-                    }
-                }
-            }
-        }
-
-        stage('Deploy to Staging') {
-            steps {
-                script {
-                    def services = [
-                        'admin-server',
-                        'api-gateway',
-                        'config-server',
-                        'customers-service',
-                        'discovery-server',
-                        'vets-service',
-                        'visits-service',
-                        'genai-service',
-                    ]
-
-                    for (svc in services) {
-                        def img = "${DOCKER_IMAGE}${svc}:${env.IMAGE_TAG}"
-                        sh "kubectl set image deployment/${svc} ${svc}=${img} -n staging || true"
-                    }
-                }
-            }
-        }
     }
 
     post {
