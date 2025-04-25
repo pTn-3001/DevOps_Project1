@@ -60,14 +60,14 @@ pipeline {
             steps {
                 script {
                     def services = [
-                        'admin-server',
-                        'api-gateway',
-                        'config-server',
-                        'customers-service',
-                        'discovery-server',
-                        'vets-service',
-                        'visits-service',
-                        'genai-service',
+                        'spring-petclinic-admin-server',
+                        'spring-petclinic-api-gateway',
+                        'spring-petclinic-config-server',
+                        'spring-petclinic-customers-service',
+                        'spring-petclinic-discovery-server',
+                        'spring-petclinic-vets-service',
+                        'spring-petclinic-visits-service',
+                        'spring-petclinic-genai-service',
                     ]
 
                     for (svc in services) {
