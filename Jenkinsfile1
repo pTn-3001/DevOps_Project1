@@ -4,7 +4,6 @@ pipeline {
     environment {
         DOCKER_HUB_CREDS = credentials('DOCKERHUB_TOKEN')
         DOCKER_IMAGE = "ptn3001/"
-        IMAGE_TAG = ''
     }
 
     stages {
