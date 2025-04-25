@@ -1,10 +1,11 @@
+def imageTag = ""
+
 pipeline {
     agent any
 
     environment {
         DOCKER_HUB_CREDS = credentials('DOCKERHUB_TOKEN')
         DOCKER_IMAGE = "ptn3001/"
-        IMAGE_TAG = ''
     }
 
     stages {
@@ -14,10 +15,10 @@ pipeline {
                     def branch = env.BRANCH_NAME
                     if (branch ==~ /^v\d+\.\d+\.\d+$/) {
                         echo "This is a tag release: ${branch}"
-                        env.IMAGE_TAG = branch
+                        imageTag = branch
                     } else if (branch ==~ /^rc_v\d+\.\d+\.\d+$/) {
                         echo "This is a release candidate branch: ${branch}"
-                        env.IMAGE_TAG = branch.replaceFirst(/^rc_/, '')
+                        imageTag = branch.replaceFirst(/^rc_/, '')
                     } else {
                         echo "Not a release/tag branch. Skipping pipeline."
                         currentBuild.result = 'ABORTED'
@@ -48,8 +49,8 @@ pipeline {
                     for (svc in services) {
                         def img = "${DOCKER_IMAGE}${svc}"
                         sh """
-                            docker tag ${img} ${img}:${env.IMAGE_TAG}
-                            docker push ${img}:${env.IMAGE_TAG}
+                            docker tag ${img} ${img}:${imageTag}
+                            docker push ${img}:${imageTag}
                         """
                     }
                 }
@@ -71,7 +72,7 @@ pipeline {
                     ]
 
                     for (svc in services) {
-                        def img = "${DOCKER_IMAGE}${svc}:${env.IMAGE_TAG}"
+                        def img = "${DOCKER_IMAGE}${svc}:${imageTag}"
                         sh "kubectl set image deployment/${svc} ${svc}=${img} -n staging || true"
                     }
                 }
@@ -81,7 +82,7 @@ pipeline {
 
     post {
         success {
-            echo "Deployed to staging with tag ${env.IMAGE_TAG}"
+            echo "Deployed to staging with tag ${imageTag}"
         }
         failure {
             echo "Pipeline failed."
