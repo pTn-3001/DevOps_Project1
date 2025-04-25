@@ -1,4 +1,3 @@
-Hồ Nghĩa
 pipeline {
     agent any
 
@@ -12,17 +11,6 @@ pipeline {
         stage('Check Branch or Tag') {
             steps {
                 script {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-                    def tag = sh(script: "git describe --tags --exact-match HEAD 2>/dev/null || echo ''", returnStdout: true).trim()
->>>>>>> 327c9fb (Commit 5)
-=======
-                    def tag = sh(script: "git tag --points-at HEAD", returnStdout: true).trim()
->>>>>>> dc0702c (Commit 1)
-=======
->>>>>>> 659c0bb (Commit 1)
                     def branch = env.BRANCH_NAME
                     if (branch ==~ /^v\d+\.\d+\.\d+$/) {
                         echo "This is a tag release: ${branch}"
@@ -38,10 +26,6 @@ pipeline {
                 }
             }
         }
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 659c0bb (Commit 1)
 
         stage('Build & Push Image') {
             steps {
@@ -49,14 +33,14 @@ pipeline {
                     sh './mvnw clean install -P buildDocker'
 
                     def services = [
-                        'admin-server',
-                        'api-gateway',
-                        'config-server',
-                        'customers-service',
-                        'discovery-server',
-                        'vets-service',
-                        'visits-service',
-                        'genai-service',
+                        'spring-petclinic-admin-server',
+                        'spring-petclinic-api-gateway',
+                        'spring-petclinic-config-server',
+                        'spring-petclinic-customers-service',
+                        'spring-petclinic-discovery-server',
+                        'spring-petclinic-vets-service',
+                        'spring-petclinic-visits-service',
+                        'spring-petclinic-genai-service',
                     ]
 
                     sh "echo ${DOCKER_HUB_CREDS_PSW} | docker login -u ${DOCKER_HUB_CREDS_USR} --password-stdin"
@@ -64,8 +48,8 @@ pipeline {
                     for (svc in services) {
                         def img = "${DOCKER_IMAGE}${svc}"
                         sh """
-                            docker tag ${img} ${img}:${IMAGE_TAG}
-                            docker push ${img}:${IMAGE_TAG}
+                            docker tag ${img} ${img}:${env.IMAGE_TAG}
+                            docker push ${img}:${env.IMAGE_TAG}
                         """
                     }
                 }
@@ -76,28 +60,23 @@ pipeline {
             steps {
                 script {
                     def services = [
-                        'admin-server',
-                        'api-gateway',
-                        'config-server',
-                        'customers-service',
-                        'discovery-server',
-                        'vets-service',
-                        'visits-service',
-                        'genai-service',
+                        'spring-petclinic-admin-server',
+                        'spring-petclinic-api-gateway',
+                        'spring-petclinic-config-server',
+                        'spring-petclinic-customers-service',
+                        'spring-petclinic-discovery-server',
+                        'spring-petclinic-vets-service',
+                        'spring-petclinic-visits-service',
+                        'spring-petclinic-genai-service',
                     ]
 
                     for (svc in services) {
-                        def img = "${DOCKER_IMAGE}${svc}:${IMAGE_TAG}"
+                        def img = "${DOCKER_IMAGE}${svc}:${env.IMAGE_TAG}"
                         sh "kubectl set image deployment/${svc} ${svc}=${img} -n staging || true"
                     }
                 }
             }
         }
-<<<<<<< HEAD
-=======
->>>>>>> 327c9fb (Commit 5)
-=======
->>>>>>> 659c0bb (Commit 1)
     }
 
     post {
