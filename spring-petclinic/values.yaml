@@ -52,4 +52,8 @@ replicaCount: 1
 
 ingress:
   enabled: true
+<<<<<<< HEAD
   host: dev.spring-petclinic.com
+=======
+  host: dev.spring-petclinic.com
+>>>>>>> 9b430dd6037914e9b5c65eeab8153f65df30edcf

@@ -17,4 +17,8 @@ spec:
               service:
                 name: api-gateway
                 port:
+<<<<<<< HEAD
                   number: 8080
+=======
+                  number: 8080
+>>>>>>> 9b430dd6037914e9b5c65eeab8153f65df30edcf
