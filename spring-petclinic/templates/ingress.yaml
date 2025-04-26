@@ -8,7 +8,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: dev.spring-petclinic.com
+  - host: staging.spring-petclinic.com
     http:
       paths:
       - path: /
