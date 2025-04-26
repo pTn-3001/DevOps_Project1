@@ -6,6 +6,7 @@ pipeline {
     environment {
         DOCKER_HUB_CREDS = credentials('DOCKERHUB_TOKEN')
         DOCKER_IMAGE = "ptn3001/"
+        NAMESPACE = "staging"
     }
 
     stages {
@@ -57,24 +58,29 @@ pipeline {
             }
         }
 
+        stage('Create Namespace if needed') {
+            steps {
+                script {
+                    sh "kubectl get namespace ${NAMESPACE} || kubectl create namespace ${NAMESPACE}"
+                }
+            }
+        }
+
         stage('Deploy to Staging') {
             steps {
                 script {
-                    def services = [
-                        'spring-petclinic-admin-server',
-                        'spring-petclinic-api-gateway',
-                        'spring-petclinic-config-server',
-                        'spring-petclinic-customers-service',
-                        'spring-petclinic-discovery-server',
-                        'spring-petclinic-vets-service',
-                        'spring-petclinic-visits-service',
-                        'spring-petclinic-genai-service',
-                    ]
-
-                    for (svc in services) {
-                        def img = "${DOCKER_IMAGE}${svc}:${imageTag}"
-                        sh "kubectl set image deployment/${svc} ${svc}=${img} -n staging || true"
-                    }
+                    sh """
+                    helm upgrade --install spring-petclinic ./spring-petclinic -n ${NAMESPACE} --create-namespace \\
+                        --set namespace=${NAMESPACE} \\
+                        --set services.api-gateway.tag=${imageTag} \\
+                        --set services.customers-service.tag=${imageTag} \\
+                        --set services.vets-service.tag=${imageTag} \\
+                        --set services.visits-service.tag=${imageTag} \\
+                        --set services.admin-server.tag=${imageTag} \\
+                        --set services.discovery-server.tag=${imageTag} \\
+                        --set services.config-server.tag=${imageTag} \\
+                        --set services.genai-service.tag=${imageTag}
+                    """
                 }
             }
         }
