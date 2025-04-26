@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         DOCKER_HUB_CREDS = credentials('DOCKERHUB_TOKEN')
+        GIT_CRED = credentials('GITHUB_TOKEN')
         DOCKER_IMAGE = "ptn3001/"
     }
 
@@ -107,7 +108,28 @@ pipeline {
         //         }
         //     }
         // }
-      
+        stage('Update GitOps Repo') {
+            steps {
+                script {
+                    sh """
+                    rm -rf tmp-gitops-repo
+                    git clone https://${GIT_CRED_USR}:${GIT_CRED_PSW}@github.com/pTn-3001/spring-petclinic-argocd.git tmp-gitops-repo
+                    cd tmp-gitops-repo
+                    git checkout dev
+                    
+                    # Chỉnh sửa đúng file values.yaml
+                    sed -i 's/tag: ".*"/tag: "${commitId}"/g' spring-petclinic/values.yaml
+                    
+                    git config user.email "nghialk11@gmail.com"
+                    git config user.name "nghiaz160904"
+                    
+                    git add spring-petclinic/values.yaml
+                    git commit -m "Update image tag to ${commitId} [ci skip]"
+                    git push origin staging
+                    """
+                }
+            }
+        }
     }
 
     post {
