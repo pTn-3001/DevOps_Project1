@@ -122,7 +122,7 @@ pipeline {
                     
                     git add spring-petclinic/values.yaml
                     git commit -m "Update image tag to ${IMAGE_TAG} [ci skip]"
-                    git push origin staging
+                    git push origin dev
                     """
                 }
             }
