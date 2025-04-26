@@ -84,6 +84,14 @@ pipeline {
                 }
             }
         }
+        stage('Debug Info') {
+            steps {
+                script {
+                    echo "Running job: ${env.JOB_NAME} on branch ${env.BRANCH_NAME}"
+                    sh "cat Jenkinsfile"  // cat chính file Jenkinsfile đang chạy
+                }
+            }
+        }
     }
 
     post {
