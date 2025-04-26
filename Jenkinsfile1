@@ -58,22 +58,44 @@ pipeline {
             }
         }
 
-        stage('Deploy to Staging') {
+//        stage('Deploy to Staging') {
+//            steps {
+//                script {
+//                    sh """
+//                    helm upgrade --install spring-petclinic ./spring-petclinic -n ${NAMESPACE} --create-namespace \\
+//                        --set namespace=${NAMESPACE} \\
+//                        --set ingress.enabled=true \\
+//                        --set ingress.host=staging.spring-petclinic.com \\
+//                        --set services.api-gateway.tag=${imageTag} \\
+//                        --set services.customers-service.tag=${imageTag} \\
+//                        --set services.vets-service.tag=${imageTag} \\
+//                        --set services.visits-service.tag=${imageTag} \\
+//                        --set services.admin-server.tag=${imageTag} \\
+//                        --set services.discovery-server.tag=${imageTag} \\
+//                        --set services.config-server.tag=${imageTag} \\
+//                        --set services.genai-service.tag=${imageTag}
+//                    """
+//                }
+//            }
+//        }
+        stage('Update GitOps Repo') {
             steps {
                 script {
                     sh """
-                    helm upgrade --install spring-petclinic ./spring-petclinic -n ${NAMESPACE} --create-namespace \\
-                        --set namespace=${NAMESPACE} \\
-                        --set ingress.enabled=true \\
-                        --set ingress.host=staging.spring-petclinic.com \\
-                        --set services.api-gateway.tag=${imageTag} \\
-                        --set services.customers-service.tag=${imageTag} \\
-                        --set services.vets-service.tag=${imageTag} \\
-                        --set services.visits-service.tag=${imageTag} \\
-                        --set services.admin-server.tag=${imageTag} \\
-                        --set services.discovery-server.tag=${imageTag} \\
-                        --set services.config-server.tag=${imageTag} \\
-                        --set services.genai-service.tag=${imageTag}
+                    rm -rf tmp-gitops-repo
+                    git clone https://github.com/pTn-3001/spring-petclinic-argocd.git tmp-gitops-repo
+                    cd tmp-gitops-repo
+                    git checkout staging
+        
+                    # Update values.yaml: thay thế tất cả tag cũ thành tag mới
+                    sed -i 's/tag: \".*\"/tag: \"${imageTag}\"/g' values.yaml
+        
+                    git config user.email "nghialk11@gmail.com"
+                    git config user.name "nghiaz160904"
+        
+                    git add values.yaml
+                    git commit -m "Update image tag to ${imageTag} [ci skip]"
+                    git push origin staging
                     """
                 }
             }
