@@ -1,5 +1,5 @@
 pipeline {
-    agent none
+    agent any
 
     environment {
         DOCKER_HUB_CREDS = credentials('DOCKERHUB_TOKEN')
@@ -9,7 +9,6 @@ pipeline {
 
     stages {
         stage('Check Changes') {
-            agent { label 'built-in' } // Chạy trên Master
             steps {
                 script {
                     echo "Commit SHA: ${GIT_COMMIT}"
@@ -58,7 +57,6 @@ pipeline {
         }
 
         stage('Build and Push Changed Services') {
-            agent { label 'built-in' }
             when {
                 expression { env.NO_SERVICES_TO_BUILD == 'false' }
             }
@@ -89,7 +87,6 @@ pipeline {
         }
 
         // stage('Deploy to dev namespace') {
-        //     agent { label 'built-in' }
         //     when {
         //         expression { env.NO_SERVICES_TO_BUILD == 'false' }
         //     }
