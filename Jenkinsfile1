@@ -86,14 +86,14 @@ pipeline {
                     git clone https://github.com/pTn-3001/spring-petclinic-argocd.git tmp-gitops-repo
                     cd tmp-gitops-repo
                     git checkout staging
-        
-                    # Update values.yaml: thay thế tất cả tag cũ thành tag mới
-                    sed -i 's/tag: \".*\"/tag: \"${imageTag}\"/g' values.yaml
-        
+                    
+                    # Chỉnh sửa đúng file values.yaml
+                    sed -i 's/tag: ".*"/tag: "${imageTag}"/g' spring-petclinic/values.yaml
+                    
                     git config user.email "nghialk11@gmail.com"
                     git config user.name "nghiaz160904"
-        
-                    git add values.yaml
+                    
+                    git add spring-petclinic/values.yaml
                     git commit -m "Update image tag to ${imageTag} [ci skip]"
                     git push origin staging
                     """
