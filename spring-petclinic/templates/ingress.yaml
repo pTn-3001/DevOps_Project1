@@ -8,13 +8,13 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: staging.spring-petclinic.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: api-gateway
-            port:
-              number: 8080
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api-gateway
+                port:
+                  number: 8080
