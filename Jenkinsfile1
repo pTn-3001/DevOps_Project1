@@ -5,6 +5,7 @@ pipeline {
 
     environment {
         DOCKER_HUB_CREDS = credentials('DOCKERHUB_TOKEN')
+        GIT_CRED = credentials('GITHUB_TOKEN')
         DOCKER_IMAGE = "ptn3001/"
         NAMESPACE = "staging"
     }
@@ -83,7 +84,7 @@ pipeline {
                 script {
                     sh """
                     rm -rf tmp-gitops-repo
-                    git clone https://github.com/pTn-3001/spring-petclinic-argocd.git tmp-gitops-repo
+                    git clone https://${GIT_CRED_USR}:${GIT_CRED_PSW}@github.com/pTn-3001/spring-petclinic-argocd.git tmp-gitops-repo
                     cd tmp-gitops-repo
                     git checkout staging
                     
