@@ -20,7 +20,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 
 import java.util.Date;
-
+// huhu
 /**
  * Simple JavaBean domain object representing a visit.
  *
