@@ -58,20 +58,14 @@ pipeline {
             }
         }
 
-        stage('Create Namespace if needed') {
-            steps {
-                script {
-                    sh "kubectl get namespace ${NAMESPACE} || kubectl create namespace ${NAMESPACE}"
-                }
-            }
-        }
-
         stage('Deploy to Staging') {
             steps {
                 script {
                     sh """
                     helm upgrade --install spring-petclinic ./spring-petclinic -n ${NAMESPACE} --create-namespace \\
                         --set namespace=${NAMESPACE} \\
+                        --set ingress.enabled=true \\
+                        --set ingress.host=staging.spring-petclinic.com \\
                         --set services.api-gateway.tag=${imageTag} \\
                         --set services.customers-service.tag=${imageTag} \\
                         --set services.vets-service.tag=${imageTag} \\
