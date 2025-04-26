@@ -47,4 +47,9 @@ services:
     image: ptn3001/spring-petclinic-admin-server
     tag: ""
     port: 9090
+
 replicaCount: 1
+
+ingress:
+  enabled: true
+  host: dev.spring-petclinic.com
