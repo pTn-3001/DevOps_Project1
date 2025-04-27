@@ -123,7 +123,7 @@ pipeline {
                         short_name=\$(echo \$svc | sed 's/spring-petclinic-//')
                         echo "Updating service \$short_name with tag \$IMAGE_TAG"
         
-                        yq e -i ".services.\${short_name}.tag = \"\${IMAGE_TAG}\"" spring-petclinic/values.yaml
+                        yq e -i ".services.\${short_name}.tag = \\"\${IMAGE_TAG}\\"" spring-petclinic/values.yaml
                     done
         
                     git config user.email "nghialk11@gmail.com"
