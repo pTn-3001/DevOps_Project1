@@ -20,7 +20,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.xml.bind.annotation.XmlElement;
 import org.springframework.beans.support.MutableSortDefinition;
 import org.springframework.beans.support.PropertyComparator;
-// PTN3001
+// PTN
 import java.util.*;
 
 /**
