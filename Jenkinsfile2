@@ -108,40 +108,31 @@ pipeline {
         stage('Update GitOps Repo') {
             steps {
                 script {
-                    sh '''
-                        rm -rf tmp-gitops-repo
-                        git clone https://${GIT_CRED_USR}:${GIT_CRED_PSW}@github.com/pTn-3001/spring-petclinic-argocd.git tmp-gitops-repo
-                        cd tmp-gitops-repo
-                        git checkout dev
+                    sh """
+                    rm -rf tmp-gitops-repo
+                    git clone https://${GIT_CRED_USR}:${GIT_CRED_PSW}@github.com/pTn-3001/spring-petclinic-argocd.git tmp-gitops-repo
+                    cd tmp-gitops-repo
+                    git checkout dev
         
-                        SERVICES_CHANGED="${SERVICE_CHANGED}"
-                        IMAGE_TAG="${IMAGE_TAG}"
+                    echo "🔎 Updating services tag..."
+                    SERVICES_CHANGED="${SERVICE_CHANGED}"
+                    IMAGE_TAG="${IMAGE_TAG}"
         
-                        awk -v changed_services="$SERVICES_CHANGED" -v new_tag="$IMAGE_TAG" '
-                        BEGIN {
-                            split(changed_services, arr, ",")
-                            for (i in arr) changed[arr[i]] = 1
-                        }
-                        /^  ([a-zA-Z0-9_-]+):$/ {
-                            current_service = gensub(/^  ([a-zA-Z0-9_-]+):$/, "\\1", 1)
-                        }
-                        /tag:/ {
-                            if (current_service in changed) {
-                                sub(/tag: ".*"/, "tag: \"" new_tag "\"")
-                            } else {
-                                sub(/tag: ".*"/, "tag: \"latest\"")
-                            }
-                        }
-                        { print }
-                        ' spring-petclinic/values.yaml > temp.yaml && mv temp.yaml spring-petclinic/values.yaml
+                    for svc in \$(echo \$SERVICES_CHANGED | tr ',' ' ')
+                    do
+                        short_name=\$(echo \$svc | sed 's/spring-petclinic-//')
+                        echo "Updating service \$short_name with tag \$IMAGE_TAG"
         
-                        git config user.email "nghialk11@gmail.com"
-                        git config user.name "nghiaz160904"
+                        yq e -i '.services.\$short_name.tag = "\$IMAGE_TAG"' spring-petclinic/values.yaml
+                    done
         
-                        git add spring-petclinic/values.yaml
-                        git commit -m "Update image tag to ${IMAGE_TAG} [ci skip]" || echo "No changes to commit"
-                        git push origin dev
-                    '''
+                    git config user.email "nghialk11@gmail.com"
+                    git config user.name "nghiaz160904"
+        
+                    git add spring-petclinic/values.yaml
+                    git commit -m "Update image tag to \$IMAGE_TAG [ci skip]" || echo "No changes to commit."
+                    git push origin dev
+                    """
                 }
             }
         }
